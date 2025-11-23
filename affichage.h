@@ -1,14 +1,39 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "point.h"
 
 const int LARGEUR = 30;
 const int HAUTEUR = 20;
 
-struct Point {
-    int x, y;
+class AffichageStrategie {
+public:
+    virtual char getChar(const Point& p) const = 0;
+    virtual ~AffichageStrategie() = default;
 };
 
-std::vector<Point> creerPoints(const std::string& ligne);
-void tracerLigne(std::vector<std::vector<char>>& grille, int x0, int y0, int x1, int y1);
-void imprimerGrille(const std::vector<Point>& points);
+class AffichageTexture : public AffichageStrategie {
+public:
+    char getChar(const Point& p) const override;
+};
+
+class AffichageID : public AffichageStrategie {
+public:
+    char getChar(const Point& p) const override;
+};
+
+class Gestionnaire {
+
+public:
+    void creerPoints(const std::string& ligne);
+    void tracerLigne(std::vector<std::vector<char>>& grille, int x0, int y0, int x1, int y1, const AffichageStrategie& strategie);
+    void imprimerGrille(const std::vector<Point>& points, const AffichageStrategie& strategie);
+    void afficherPoints();
+    void supprimerPoint();
+    void deplacerPoint();
+    vector<Point> getPoints();
+       
+private:
+    vector<Point> points;
+};
+

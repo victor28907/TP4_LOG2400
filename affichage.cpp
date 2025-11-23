@@ -6,40 +6,48 @@
 
 using namespace std;
 
-void tracerLigne(vector<vector<char>>& grille, int x0, int y0, int x1, int y1) {
-    // Distance verticale
-    int lignes = abs(y1 - y0);
-    // Si la ligne est horizontale 
-    if (lignes == 0) {
-        // On prend distance horizontale 
-        lignes = abs(x1 - x0);
-        for (int i = 0; i <= lignes; ++i) {
-            // On trace chaque point de la ligne, de gauche à droite ou de droite à gauche selon la direction.
-            int x = (x0 < x1) ? x0 + i : x0 - i;
-            if (y1 >= 0 && y1 < HAUTEUR && x >= 0 && x < LARGEUR)
-                grille[y1][x] = '/';
-        }
-    } else {
-        // Si la ligne est verticale ou diagonale 
-        for (int i = 0; i <= lignes; ++i) {
-            double t = (double)i / lignes;
-            // On fait une interpolation lineaire
-            int x = round(x0 + t * (x1 - x0));
-            int y = round(y0 + t * (y1 - y0));
-            if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR)
-                grille[y][x] = '/';
-        }
+void Gestionnaire::tracerLigne(vector<vector<char>>& grille, int x0, int y0, int x1, int y1, const AffichageStrategie& strategie) {
+    //// Distance verticale
+    //int lignes = abs(y1 - y0);
+    //// Si la ligne est horizontale 
+    //if (lignes == 0) {
+    //    // On prend distance horizontale 
+    //    lignes = abs(x1 - x0);
+    //    for (int i = 0; i <= lignes; ++i) {
+    //        // On trace chaque point de la ligne, de gauche à droite ou de droite à gauche selon la direction.
+    //        int x = (x0 < x1) ? x0 + i : x0 - i;
+    //        if (y1 >= 0 && y1 < HAUTEUR && x >= 0 && x < LARGEUR)
+    //            grille[y1][x] = '/';
+    //    }
+    //}
+    //else {
+    //    // Si la ligne est verticale ou diagonale 
+    //    for (int i = 0; i <= lignes; ++i) {
+    //        double t = (double)i / lignes;
+    //        // On fait une interpolation lineaire
+    //        int x = round(x0 + t * (x1 - x0));
+    //        int y = round(y0 + t * (y1 - y0));
+    //        if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR)
+    //            grille[y][x] = '/';
+    //    }
+    //}
+    for (const Point& p : points) {
+        int x = p.getX();
+        int y = p.getY();
+        if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR)
+            grille[y][x] = strategie.getChar(p);
     }
 }
 
 
-void imprimerGrille(const vector<Point>& points) {
+void Gestionnaire::imprimerGrille(const vector<Point>& points, const AffichageStrategie& strategie) {
     // On crée une grille.
     vector<vector<char>> grille(HAUTEUR, vector<char>(LARGEUR, ' '));
 
     // On trace une ligne entre le point 0 et 1.
     // TODO : Remplacer par un tracé selon la commande de l'utilisateur (c1 ou c2)
-    tracerLigne(grille, points[0].x, points[0].y, points[1].x, points[1].y);
+    tracerLigne(grille, points[0].getX(), points[0].getY(), points[1].getX(), points[1].getY(), strategie);
+
 
     // On imprime la grille.
     for (int y = HAUTEUR - 1; y >= 0; --y) {
@@ -50,9 +58,8 @@ void imprimerGrille(const vector<Point>& points) {
 }
 
 
-
-vector<Point> creerPoints(const string& ligne) {
-    vector<Point> points;
+void Gestionnaire::creerPoints(const string& ligne) {
+    //vector<Point> points;
     // On crée un flux de lecture (istringstream) à partir de la chaîne ligne.
     istringstream iss(ligne);
     string token;
@@ -69,9 +76,79 @@ vector<Point> creerPoints(const string& ligne) {
             int x, y;
             // On ajoute un point {x, y} au vecteur de points.
             if (pair >> x >> y) {
-                points.push_back({x, y});
+                points.push_back(Point(x, y));
             }
         }
     }
+
+}
+
+void Gestionnaire::afficherPoints() {
+    cout << "\nListe:\n";
+    for (const auto& p : points) {
+        cout << p.getId() + ": ("
+            + to_string(p.getX()) + ","
+            + to_string(p.getY()) + ")   textures: '"
+            + p.getTexture() + "'\n";
+    }
+    cout << "\n";
+}
+
+void Gestionnaire::supprimerPoint() {
+    string idSupprimer;
+
+    cout << "ID du point a supprimer: ";
+    cin >> idSupprimer;
+
+    auto it = remove_if(points.begin(), points.end(),
+        [&](const Point& p) { return p.getId() == idSupprimer; });
+
+    if (it == points.end()) {
+        cout << "Erreur : ID invalide";
+    }
+    else {
+        points.erase(it, points.end());
+    }
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+void Gestionnaire::deplacerPoint() {
+    string idDeplacer;
+    int nouveauX, nouveauY;
+
+    cout << "ID du point a deplacer: ";
+    cin >> idDeplacer;
+
+    auto it = find_if(points.begin(), points.end(),
+        [&](const Point& p) { return p.getId() == idDeplacer; });
+
+
+    if (it == points.end()) {
+        cout << "Erreur : ID invalide";
+    }
+    else {
+        cout << "Nouvelle position (x y): ";
+        if (!(cin >> nouveauX >> nouveauY)) {
+            cout << "Erreur : Mauvaise coordonnees\n";
+        }
+        else {
+            it->deplacerPoint(nouveauX, nouveauY);
+        }
+    }
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+vector<Point> Gestionnaire::getPoints() {
     return points;
+}
+
+char AffichageTexture::getChar(const Point& p) const {
+    return p.getTexture();
+}
+
+char AffichageID::getChar(const Point& p) const {
+    std::string id = p.getId();
+    return id.empty() ? '?' : id[0];
 }
