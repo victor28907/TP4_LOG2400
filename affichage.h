@@ -33,8 +33,10 @@ public:
     void deplacerPoint();
     void fusionnerPoints();
     vector<Point> getPoints();
-       
+    void creerNuage(); // ???
+
 private:
     vector<Point> points;
+    vector<Point> nuages[3]; // ???
 };
 

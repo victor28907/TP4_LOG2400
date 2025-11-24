@@ -7,69 +7,68 @@
 using namespace std;
 
 void Gestionnaire::tracerLigne(vector<vector<char>>& grille, const AffichageStrategie& strategie) {
+
     for (size_t i = 0; i + 1 < points.size(); ++i) {
         const auto& p1 = points[i];
         const auto& p2 = points[i+1];
+        int dx = p2.getX() - p1.getX();
+        int dy = p2.getY() - p1.getY();
+        double pente;
 
-        // Distance verticale
-        int lignes = abs(p2.getY() - p1.getY());
-        // Si la ligne est horizontale
-        if (lignes == 0) {
-            // On prend distance horizontale
-            lignes = abs(p2.getX() - p1.getX());
-            for (int j = 0; j <= lignes; ++j) {
-                // On trace chaque point de la ligne
-                int x = (p1.getX() < p2.getX()) ? p1.getX() + j : p1.getX() - j;
-                if (p2.getY() >= 0 && p2.getY() < HAUTEUR && x >= 0 && x < LARGEUR)
-                    grille[p2.getY()][x] = '-';
-            }
-        }
-        
-        // Distance horizontale
-        lignes = abs(p2.getX() - p1.getX());
         // Si la ligne est verticale
-        if (lignes == 0) {
-            lignes = abs(p2.getY() - p1.getY());
-            for (int j = 0; j <= lignes; ++j) {
-                // On trace chaque point de la ligne
+        if (dx == 0) {
+            for (int j = 0; j <= abs(dy); ++j) {
                 int y = (p1.getY() < p2.getY()) ? p1.getY() + j : p1.getY() - j;
                 if (p2.getX() >= 0 && p2.getX() < LARGEUR && y >= 0 && y < HAUTEUR)
                     grille[y][p2.getX()] = '|';
             }
         }
-    }
-    
-    /*// Distance verticale
-    int lignes = abs(y1 - y0);
-    // Si la ligne est horizontale 
-    if (lignes == 0) {
-        // On prend distance horizontale 
-        lignes = abs(x1 - x0);
-        for (int i = 0; i <= lignes; ++i) {
-            // On trace chaque point de la ligne, de gauche à droite ou de droite à gauche selon la direction.
-            int x = (x0 < x1) ? x0 + i : x0 - i;
-            if (y1 >= 0 && y1 < HAUTEUR && x >= 0 && x < LARGEUR)
-                grille[y1][x] = '/';
-        }
-    }
-    else {
-        // Si la ligne est verticale ou diagonale 
-        for (int i = 0; i <= lignes; ++i) {
-            double t = (double)i / lignes;
-            // On fait une interpolation lineaire
-            int x = round(x0 + t * (x1 - x0));
-            int y = round(y0 + t * (y1 - y0));
-            if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR)
-                grille[y][x] = '/';
-        }
-    }*/
 
+        // Si la ligne est horizontale
+        else if (dy == 0) {
+            for (int j = 0; j <= abs(dx); ++j) {
+                int x = (p1.getX() < p2.getX()) ? p1.getX() + j : p1.getX() - j;
+                if (p2.getY() >= 0 && p2.getY() < HAUTEUR && x >= 0 && x < LARGEUR)
+                    grille[p2.getY()][x] = '-';
+            }
+        }
+
+        // Si la ligne est diagonale
+        else {
+            pente = (double) dy / dx;
+                for (int i = 0; i <= abs(dy); ++i) {
+                    double t = (double)i / abs(dy);
+                    // On fait une interpolation lineaire
+                    int x = round(p1.getX() + t * (p2.getX() - p1.getX()));
+                    int y = round(p1.getY() + t * (p2.getY() - p1.getY()));
+
+                    int debut = 0, fin = 0;
+                    if (abs(pente) < 0.4) {
+                        debut = x-1;
+                        fin = x+1;
+                    } else if (abs(pente) < 0.8) {
+                        debut = x-1;
+                        fin = x;
+                    } else {
+                        debut = x;
+                        fin = x;
+                    }
+                    for (int k = debut; k <= fin; ++k) {
+                        if (k >= 0 && k < LARGEUR && y >= 0 && y < HAUTEUR) {
+                            grille[y][k] = (pente > 0) ? '/' : '\\';
+                        }
+                    }
+                }
+            }
+        }
+        
+    // Ajouter les points
     for (const Point& p : points) {
         int x = p.getX();
         int y = p.getY();
         string textures = strategie.getString(p);
         if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR) {
-            for (int i = 0; i < textures.length(); i++) {
+            for (int i = 0; i < textures.length() && x < LARGEUR; i++) {
                 char texture = textures[i];
                 grille[y][x++] = texture;
             }
