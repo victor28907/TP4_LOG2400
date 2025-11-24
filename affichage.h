@@ -8,18 +8,18 @@ const int HAUTEUR = 20;
 
 class AffichageStrategie {
 public:
-    virtual char getChar(const Point& p) const = 0;
+    virtual string getString(const Point& p) const = 0;
     virtual ~AffichageStrategie() = default;
 };
 
 class AffichageTexture : public AffichageStrategie {
 public:
-    char getChar(const Point& p) const override;
+    string getString(const Point& p) const override;
 };
 
 class AffichageID : public AffichageStrategie {
 public:
-    char getChar(const Point& p) const override;
+    string getString(const Point& p) const override;
 };
 
 class Gestionnaire {

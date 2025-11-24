@@ -34,11 +34,16 @@ void Gestionnaire::tracerLigne(vector<vector<char>>& grille, int x0, int y0, int
     for (const Point& p : points) {
         int x = p.getX();
         int y = p.getY();
-        if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR)
-            grille[y][x] = strategie.getChar(p);
+        string textures = strategie.getString(p);
+        if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR) {
+            for (int i = 0; i < textures.length(); i++) {
+                char texture = textures[i];
+                grille[y][x++] = texture;
+            }
+
+        }
     }
 }
-
 
 void Gestionnaire::imprimerGrille(const vector<Point>& points, const AffichageStrategie& strategie) {
     // On crée une grille.
@@ -53,7 +58,7 @@ void Gestionnaire::imprimerGrille(const vector<Point>& points, const AffichageSt
     for (int y = HAUTEUR - 1; y >= 0; --y) {
         for (int x = 0; x < LARGEUR; ++x)
             cout << grille[y][x];
-        cout << '\n';
+        cout << '\n';   
     }
 }
 
@@ -144,11 +149,14 @@ vector<Point> Gestionnaire::getPoints() {
     return points;
 }
 
-char AffichageTexture::getChar(const Point& p) const {
+string AffichageTexture::getString(const Point& p) const {
+    if (p.getTexture() == "") {
+        return ".";
+    }
     return p.getTexture();
 }
 
-char AffichageID::getChar(const Point& p) const {
+string AffichageID::getString(const Point& p) const {
     std::string id = p.getId();
-    return id.empty() ? '?' : id[0];
+    return id;
 }

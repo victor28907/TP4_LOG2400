@@ -4,7 +4,7 @@ int Point::compteur = 0;
 
 Point::Point(int px, int py) : x(px), y(py) {
     id = to_string(compteur++);
-    texture = '.';
+    texture = "";
 }
 
 void Point::deplacerPoint(int dx, int dy) {
@@ -24,6 +24,6 @@ string Point::getId() const {
     return id;
 }
 
-char Point::getTexture() const {
+string Point::getTexture() const {
     return texture;
 }

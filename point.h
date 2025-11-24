@@ -11,12 +11,12 @@ public:
     int getX() const;
     int getY() const;
     string getId() const;
-    char getTexture() const;
+    string getTexture() const;
 
 private:
     int x;
     int y;
     string id;
-    char texture;
+    string texture;
     static int compteur;
 };
