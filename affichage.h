@@ -31,6 +31,7 @@ public:
     void afficherPoints();
     void supprimerPoint();
     void deplacerPoint();
+    void fusionnerPoints();
     vector<Point> getPoints();
        
 private:

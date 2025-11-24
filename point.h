@@ -1,3 +1,6 @@
+#ifndef POINT_H
+#define POINT_H
+
 #include <string>
 #include <iostream>
 
@@ -12,6 +15,7 @@ public:
     int getY() const;
     string getId() const;
     string getTexture() const;
+    void setTexture(const string& t);
 
 private:
     int x;
@@ -20,3 +24,5 @@ private:
     string texture;
     static int compteur;
 };
+
+#endif // POINT_H
