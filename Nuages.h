@@ -11,10 +11,9 @@ class Nuages {
 public:
     Nuages(const vector<Point>& points);
 
-    // Accesseurs pour chaque vecteur
     const vector<Point>& getO() const;
     const vector<Point>& getHash() const;
-
+    void afficherNuages() const;
 private:
     vector<Point> o;     
     vector<Point> hash;  

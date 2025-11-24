@@ -157,15 +157,19 @@ void Gestionnaire::fusionnerPoints() {
         ids.push_back(id);
     }
 
-    for (auto& p : points) {
-        if (find(ids.begin(), ids.end(), p.getId()) != ids.end()) {
+    for (const auto& fusionId : ids) {
+        auto it = find_if(points.begin(), points.end(),
+            [&](const Point& p) { return p.getId() == fusionId; });
+        if (it != points.end()) {
             if (premiereFusion)
-                p.setTexture(p.getTexture() + "o");
+                it->setTexture(it->getTexture() + "o");
             else
-                p.setTexture(p.getTexture() + "#");
+                it->setTexture(it->getTexture() + "#");
+        }
+        else {
+            cout << "ID invalide: " << fusionId << "\n";
         }
     }
-
     premiereFusion = !premiereFusion;
 }
 

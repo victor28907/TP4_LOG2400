@@ -56,27 +56,7 @@ int main(int argc, char* argv[]) {
         if (cmd == "a") {
             gestionnaire.afficherPoints();
             Nuages nuage(gestionnaire.getPoints());
-
-            const auto& oPoints = nuage.getO();
-            const auto& hashPoints = nuage.getHash();
-
-            if (!oPoints.empty()) {
-                cout << "Nuage \"o\" contient les points: ";
-                for (size_t i = 0; i < oPoints.size(); ++i) {
-                    cout << oPoints[i].getId();
-                    if (i != oPoints.size() - 1) cout << ", ";
-                }
-                cout << "\n";
-            }
-
-            if (!hashPoints.empty()) {
-                cout << "Nuage \"#\" contient les points: ";
-                for (size_t i = 0; i < hashPoints.size(); ++i) {
-                    cout << hashPoints[i].getId();
-                    if (i != hashPoints.size() - 1) cout << ", ";
-                }
-                cout << "\n";
-            }
+            nuage.afficherNuages();
         }
         if (cmd == "s") gestionnaire.supprimerPoint();
         if (cmd == "d") gestionnaire.deplacerPoint();
