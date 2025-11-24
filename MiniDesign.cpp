@@ -1,4 +1,5 @@
 #include "affichage.h"
+#include "nuages.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -50,8 +51,13 @@ int main(int argc, char* argv[]) {
             AffichageID strategie;
             gestionnaire.imprimerGrille(gestionnaire.getPoints(), strategie);
         }
+        if (cmd == "f") gestionnaire.fusionnerPoints();
         if (cmd == "q") break;
-        if (cmd == "a") gestionnaire.afficherPoints();
+        if (cmd == "a") {
+            gestionnaire.afficherPoints();
+            Nuages nuage(gestionnaire.getPoints());
+            nuage.afficherNuages();
+        }
         if (cmd == "s") gestionnaire.supprimerPoint();
         if (cmd == "d") gestionnaire.deplacerPoint();
     }

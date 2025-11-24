@@ -129,7 +129,6 @@ void Gestionnaire::afficherPoints() {
             + to_string(p.getY()) + ")   textures: '"
             + p.getTexture() + "'\n";
     }
-    cout << "\n";
 }
 
 void Gestionnaire::supprimerPoint() {
@@ -178,9 +177,39 @@ void Gestionnaire::deplacerPoint() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
+void Gestionnaire::fusionnerPoints() {
+    static bool premiereFusion = true; // alterne entre "o" et "#"
+
+    cout << "Entrez les IDs des points a fusionner (ex: 0 2 4) : ";
+    string ligne;
+    getline(cin >> ws, ligne);
+    istringstream iss(ligne);
+    string id;
+    vector<string> ids;
+    while (iss >> id) {
+        ids.push_back(id);
+    }
+
+    for (const auto& fusionId : ids) {
+        auto it = find_if(points.begin(), points.end(),
+            [&](const Point& p) { return p.getId() == fusionId; });
+        if (it != points.end()) {
+            if (premiereFusion)
+                it->setTexture(it->getTexture() + "o");
+            else
+                it->setTexture(it->getTexture() + "#");
+        }
+        else {
+            cout << "ID invalide: " << fusionId << "\n";
+        }
+    }
+    premiereFusion = !premiereFusion;
+}
+
 vector<Point> Gestionnaire::getPoints() {
     return points;
 }
+
 
 string AffichageTexture::getString(const Point& p) const {
     if (p.getTexture() == "") {

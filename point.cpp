@@ -27,3 +27,7 @@ string Point::getId() const {
 string Point::getTexture() const {
     return texture;
 }
+
+void Point::setTexture(const string& t) {
+    texture = t;
+}
