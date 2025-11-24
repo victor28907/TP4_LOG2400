@@ -26,7 +26,7 @@ class Gestionnaire {
 
 public:
     void creerPoints(const std::string& ligne);
-    void tracerLigne(std::vector<std::vector<char>>& grille, int x0, int y0, int x1, int y1, const AffichageStrategie& strategie);
+    void tracerLigne(std::vector<std::vector<char>>& grille, const AffichageStrategie& strategie);
     void imprimerGrille(const std::vector<Point>& points, const AffichageStrategie& strategie);
     void afficherPoints();
     void supprimerPoint();

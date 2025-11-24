@@ -6,31 +6,64 @@
 
 using namespace std;
 
-void Gestionnaire::tracerLigne(vector<vector<char>>& grille, int x0, int y0, int x1, int y1, const AffichageStrategie& strategie) {
-    //// Distance verticale
-    //int lignes = abs(y1 - y0);
-    //// Si la ligne est horizontale 
-    //if (lignes == 0) {
-    //    // On prend distance horizontale 
-    //    lignes = abs(x1 - x0);
-    //    for (int i = 0; i <= lignes; ++i) {
-    //        // On trace chaque point de la ligne, de gauche à droite ou de droite à gauche selon la direction.
-    //        int x = (x0 < x1) ? x0 + i : x0 - i;
-    //        if (y1 >= 0 && y1 < HAUTEUR && x >= 0 && x < LARGEUR)
-    //            grille[y1][x] = '/';
-    //    }
-    //}
-    //else {
-    //    // Si la ligne est verticale ou diagonale 
-    //    for (int i = 0; i <= lignes; ++i) {
-    //        double t = (double)i / lignes;
-    //        // On fait une interpolation lineaire
-    //        int x = round(x0 + t * (x1 - x0));
-    //        int y = round(y0 + t * (y1 - y0));
-    //        if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR)
-    //            grille[y][x] = '/';
-    //    }
-    //}
+void Gestionnaire::tracerLigne(vector<vector<char>>& grille, const AffichageStrategie& strategie) {
+    for (size_t i = 0; i + 1 < points.size(); ++i) {
+        const auto& p1 = points[i];
+        const auto& p2 = points[i+1];
+
+        // Distance verticale
+        int lignes = abs(p2.getY() - p1.getY());
+        // Si la ligne est horizontale
+        if (lignes == 0) {
+            // On prend distance horizontale
+            lignes = abs(p2.getX() - p1.getX());
+            for (int j = 0; j <= lignes; ++j) {
+                // On trace chaque point de la ligne
+                int x = (p1.getX() < p2.getX()) ? p1.getX() + j : p1.getX() - j;
+                if (p2.getY() >= 0 && p2.getY() < HAUTEUR && x >= 0 && x < LARGEUR)
+                    grille[p2.getY()][x] = '-';
+            }
+        }
+        
+        // Distance horizontale
+        lignes = abs(p2.getX() - p1.getX());
+        // Si la ligne est verticale
+        if (lignes == 0) {
+            lignes = abs(p2.getY() - p1.getY());
+            for (int j = 0; j <= lignes; ++j) {
+                // On trace chaque point de la ligne
+                int y = (p1.getY() < p2.getY()) ? p1.getY() + j : p1.getY() - j;
+                if (p2.getX() >= 0 && p2.getX() < LARGEUR && y >= 0 && y < HAUTEUR)
+                    grille[y][p2.getX()] = '|';
+            }
+        }
+    }
+    
+    /*// Distance verticale
+    int lignes = abs(y1 - y0);
+    // Si la ligne est horizontale 
+    if (lignes == 0) {
+        // On prend distance horizontale 
+        lignes = abs(x1 - x0);
+        for (int i = 0; i <= lignes; ++i) {
+            // On trace chaque point de la ligne, de gauche à droite ou de droite à gauche selon la direction.
+            int x = (x0 < x1) ? x0 + i : x0 - i;
+            if (y1 >= 0 && y1 < HAUTEUR && x >= 0 && x < LARGEUR)
+                grille[y1][x] = '/';
+        }
+    }
+    else {
+        // Si la ligne est verticale ou diagonale 
+        for (int i = 0; i <= lignes; ++i) {
+            double t = (double)i / lignes;
+            // On fait une interpolation lineaire
+            int x = round(x0 + t * (x1 - x0));
+            int y = round(y0 + t * (y1 - y0));
+            if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR)
+                grille[y][x] = '/';
+        }
+    }*/
+
     for (const Point& p : points) {
         int x = p.getX();
         int y = p.getY();
@@ -51,7 +84,7 @@ void Gestionnaire::imprimerGrille(const vector<Point>& points, const AffichageSt
 
     // On trace une ligne entre le point 0 et 1.
     // TODO : Remplacer par un tracé selon la commande de l'utilisateur (c1 ou c2)
-    tracerLigne(grille, points[0].getX(), points[0].getY(), points[1].getX(), points[1].getY(), strategie);
+    tracerLigne(grille, strategie);
 
 
     // On imprime la grille.
