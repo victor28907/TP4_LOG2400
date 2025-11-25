@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <string>
-#include "point.h"  
-#include "strategieConsutruction.h"
+#include "Point.h"  
+#include "StrategieConsutruction.h"
 
 using namespace std;
 

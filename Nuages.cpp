@@ -1,4 +1,4 @@
-#include "nuages.h"
+#include "Nuages.h"
 
 Nuages::Nuages() : strategieConstruction(nullptr) {}
 

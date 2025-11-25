@@ -1,4 +1,4 @@
-#include "strategieAffichage.h"
+#include "StrategieAffichage.h"
 
 string AffichageTexture::getString(const Point& p) const {
     if (p.getTexture() == "") {

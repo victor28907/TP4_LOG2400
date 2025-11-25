@@ -1,14 +1,17 @@
-#include "affichage.h"
-#include "nuages.h"
+#include "Gestionnaire.h"
+#include "Commandes.h"
+#include "Invoker.h"
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
     Gestionnaire gestionnaire;
+    Invoker invoker;
     string args;
     // On accepte des points en entrée.
     if (argc > 1) {
@@ -26,8 +29,21 @@ int main(int argc, char* argv[]) {
     gestionnaire.creerPoints(args);
 
     // Ce sont différentes textures possibles. Seules les 2 premières sont utilisées dans les scénarios du TP.
-    vector<char> texturesNuages = { 'o', '#', '$' };
+    //vector<char> texturesNuages = { 'o', '#', '$' };
     string cmd;
+
+    unordered_map<string, function<void()>> commandesMap {
+        { "a", [&]() {invoker.executer(make_shared<CommandeAfficher>(gestionnaire));}},
+        { "o1",[&]() {invoker.executer(make_shared<CommandeGrilleTexture>(gestionnaire));}},
+        { "o2",[&]() {invoker.executer(make_shared<CommandeGrilleId>(gestionnaire));}},
+        { "f", [&]() {invoker.executer(make_shared<CommandeFusionner>(gestionnaire));}},
+        { "d", [&]() {invoker.executer(make_shared<CommandeDeplacer>(gestionnaire));}},
+        { "s", [&]() {invoker.executer(make_shared<CommandeSupprimer>(gestionnaire));}},
+        { "c1",[&]() {invoker.executer(make_shared<CommandeConstructionCroissante>(gestionnaire));}},
+        { "c2",[&]() {invoker.executer(make_shared<CommandeConstructionMinimale>(gestionnaire));}},
+        { "r", [&]() {invoker.redo();}},
+        { "u", [&]() {invoker.undo();}}
+    };
 
     // Menu
     while (true) {
@@ -40,27 +56,15 @@ int main(int argc, char* argv[]) {
             << "s  - Supprimer un point (ID)\n"
             << "c1 - Créer les surfaces selon l'ordre des IDs\n"
             << "c2 - Créer les surfaces selon la distance minimale\n"
+            << "r  - Refaire la derniere commande annulee\n"
+            << "u  - Annuler la derniere commande\n"
             << "q  - Quitter\n> ";
         getline(std::cin, cmd);
-        if (cmd == "o1") {  
-            gestionnaire.setStrategieAffichage(make_unique<AffichageTexture>());
-            gestionnaire.imprimerGrille();
-        }
-        if (cmd == "o2") {
-            gestionnaire.setStrategieAffichage(make_unique<AffichageID>());
-            gestionnaire.imprimerGrille();
-        }
-        if (cmd == "f") gestionnaire.fusionnerPoints();
+
         if (cmd == "q") break;
-        if (cmd == "a") {
-            gestionnaire.afficherPoints();
-            gestionnaire.afficherNuages();
+        auto it = commandesMap.find(cmd);
+        if (it != commandesMap.end()) it->second();
         }
-        if (cmd == "s") gestionnaire.supprimerPoint();
-        if (cmd == "d") gestionnaire.deplacerPoint();
-        if (cmd == "c1") gestionnaire.setStrategieConstruction(make_unique<ConstructionCroissante>());
-        if (cmd == "c2") gestionnaire.setStrategieConstruction(make_unique<ConstructionMinimale>());
-    }
 
     return 0;
 }

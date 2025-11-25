@@ -1,4 +1,4 @@
-#include "strategieConsutruction.h"
+#include "StrategieConsutruction.h"
 #include <algorithm>
 #include <cmath>
 

@@ -1,4 +1,4 @@
-#include "affichage.h"
+#include "Gestionnaire.h"
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -236,11 +236,28 @@ void Gestionnaire::fusionnerPoints() {
 
 Gestionnaire::Gestionnaire() : strategieConstruction(nullptr), strategieAffichage(nullptr) {}
 
-void Gestionnaire::setStrategieConstruction(std::unique_ptr<StrategieConstruction> strategie1) {
-    strategieConstruction = move(strategie1);
+void Gestionnaire::setStrategieConstruction(shared_ptr<StrategieConstruction> strategie1) {
+    strategieConstruction = strategie1;
     nuages.setStrategieConstruction(strategieConstruction.get(), points);
 }
 
 void Gestionnaire::setStrategieAffichage(unique_ptr<AffichageStrategie> strategie2) {
     strategieAffichage = move(strategie2);
+}
+
+shared_ptr<StrategieConstruction> Gestionnaire::getStrategieConstruction() const {
+    return strategieConstruction;
+}
+
+void Gestionnaire::setPoints(vector<Point> nouveauxPoints) {
+    points = nouveauxPoints;
+}
+void Gestionnaire::setNuages(Nuages nouveauxNuages) {
+    nuages = nouveauxNuages;
+}
+Nuages Gestionnaire::getNuages() const {
+    return nuages;
+}
+vector<Point> Gestionnaire::getPoints() const {
+    return points;
 }
