@@ -29,5 +29,5 @@ string Point::getTexture() const {
 }
 
 void Point::setTexture(const string& t) {
-    texture = t;
+    texture += t;
 }

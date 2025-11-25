@@ -24,7 +24,6 @@ int main(int argc, char* argv[]) {
     // Voici des fonctions utiles pour réaliser le TP. 
     // TODO: Il faudrait les placer dans des classes appropriées.
     gestionnaire.creerPoints(args);
-    //gestionnaire.imprimerGrille();
 
     // Ce sont différentes textures possibles. Seules les 2 premières sont utilisées dans les scénarios du TP.
     vector<char> texturesNuages = { 'o', '#', '$' };
@@ -43,23 +42,24 @@ int main(int argc, char* argv[]) {
             << "c2 - Créer les surfaces selon la distance minimale\n"
             << "q  - Quitter\n> ";
         getline(std::cin, cmd);
-        if (cmd == "o1") {
-            AffichageTexture strategie;  
-            gestionnaire.imprimerGrille(gestionnaire.getPoints(), strategie);
+        if (cmd == "o1") {  
+            gestionnaire.setStrategieAffichage(make_unique<AffichageTexture>());
+            gestionnaire.imprimerGrille();
         }
         if (cmd == "o2") {
-            AffichageID strategie;
-            gestionnaire.imprimerGrille(gestionnaire.getPoints(), strategie);
+            gestionnaire.setStrategieAffichage(make_unique<AffichageID>());
+            gestionnaire.imprimerGrille();
         }
         if (cmd == "f") gestionnaire.fusionnerPoints();
         if (cmd == "q") break;
         if (cmd == "a") {
             gestionnaire.afficherPoints();
-            Nuages nuage(gestionnaire.getPoints());
-            nuage.afficherNuages();
+            gestionnaire.afficherNuages();
         }
         if (cmd == "s") gestionnaire.supprimerPoint();
         if (cmd == "d") gestionnaire.deplacerPoint();
+        if (cmd == "c1") gestionnaire.setStrategieConstruction(make_unique<ConstructionCroissante>());
+        if (cmd == "c2") gestionnaire.setStrategieConstruction(make_unique<ConstructionMinimale>());
     }
 
     return 0;

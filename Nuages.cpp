@@ -1,41 +1,47 @@
 #include "nuages.h"
 
-void Nuages::afficherNuages() const {
-    if (!o.empty()) {
-        cout << "Nuage \"o\" contient les points: ";
-        for (size_t i = 0; i < o.size(); ++i) {
-            cout << o[i].getId();
-            if (i != o.size() - 1) cout << ", ";
-        }
-        cout << "\n";
-    }
-
-    if (!hash.empty()) {
-        cout << "Nuage \"#\" contient les points: ";
-        for (size_t i = 0; i < hash.size(); ++i) {
-            cout << hash[i].getId();
-            if (i != hash.size() - 1) cout << ", ";
-        }
-        cout << "\n";
-    }
+Nuages::Nuages() : strategieConstruction(nullptr) {
+    //textures[0] = &texture1;
+    //textures[1] = &texture2;
+    //textures[2] = &texture3;
 }
 
-Nuages::Nuages(const vector<Point>& points) {
-    for (const auto& p : points) {
-        string tex = p.getTexture();
-        if (tex.find('o') != string::npos) { 
-            o.push_back(p);
-        }
-        if (tex.find('#') != string::npos) { 
-            hash.push_back(p);
+void Nuages::ajouterNuage(const vector<string>& ids, vector<Point>& points) {
+    for (int i = 0; i < 3; i++) {
+        if (textures[i].empty()) {
+            textures[i].insert(textures[i].end(), ids.begin(), ids.end());
+            for (const string&  id : ids) {
+                for (auto& p : points) {
+                    if (p.getId() == id) {
+                        p.setTexture(string(1, symboles[i]));
+                        break;
+                    }
+                }
+            }
+            return;
         }
     }
 }
 
-const vector<Point>& Nuages::getO() const {
-    return o;
+const vector<string>& Nuages::getTexture1() const {
+    return textures[0];
 }
 
-const vector<Point>& Nuages::getHash() const {
-    return hash;
+const vector<string>& Nuages::getTexture2() const {
+    return textures[1];
 }
+
+const vector<string>& Nuages::getTexture3() const {
+    return textures[2];
+}
+
+vector<string>* Nuages::getTextures()  {
+    return textures;
+}
+
+void Nuages::setStrategieConstruction(const StrategieConstruction* strategie, vector<Point>& points) {
+    strategieConstruction = strategie;
+    if (strategieConstruction) {
+        strategieConstruction->construireNuages(textures, points);
+    }
+};
