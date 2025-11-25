@@ -1,10 +1,6 @@
 #include "nuages.h"
 
-Nuages::Nuages() : strategieConstruction(nullptr) {
-    //textures[0] = &texture1;
-    //textures[1] = &texture2;
-    //textures[2] = &texture3;
-}
+Nuages::Nuages() : strategieConstruction(nullptr) {}
 
 void Nuages::ajouterNuage(const vector<string>& ids, vector<Point>& points) {
     for (int i = 0; i < 3; i++) {
