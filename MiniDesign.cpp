@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <limits>  
 
 using namespace std;
 
@@ -36,9 +37,34 @@ int main(int argc, char* argv[]) {
         { "a", [&]() {invoker.executer(make_shared<CommandeAfficher>(gestionnaire));}},
         { "o1",[&]() {invoker.executer(make_shared<CommandeGrilleTexture>(gestionnaire));}},
         { "o2",[&]() {invoker.executer(make_shared<CommandeGrilleId>(gestionnaire));}},
-        { "f", [&]() {invoker.executer(make_shared<CommandeFusionner>(gestionnaire));}},
-        { "d", [&]() {invoker.executer(make_shared<CommandeDeplacer>(gestionnaire));}},
-        { "s", [&]() {invoker.executer(make_shared<CommandeSupprimer>(gestionnaire));}},
+        { "f", [&]() {
+            cout << "Entrez les IDs des points a fusionner (ex: 0 2 4) : ";
+            string ligne;
+            getline(cin >> ws, ligne);
+            invoker.executer(make_shared<CommandeFusionner>(gestionnaire, ligne));
+        }},
+        { "d", [&]() {
+            string idDeplacer;
+            int nouveauX, nouveauY;
+            cout << "ID du point a deplacer: ";
+            cin >> idDeplacer;
+            cout << "Nouvelle position (x y): ";
+            if (!(cin >> nouveauX >> nouveauY)) {
+                cout << "Erreur : Coordonnees invalides";
+            } else {
+                invoker.executer(make_shared<CommandeDeplacer>(gestionnaire, idDeplacer, nouveauX, nouveauY));
+            }
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }},
+        { "s", [&]() {
+            string idSupprimer;
+            cout << "ID du point a supprimer: ";
+            cin >> idSupprimer;
+            invoker.executer(make_shared<CommandeSupprimer>(gestionnaire, idSupprimer));
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }},
         { "c1",[&]() {invoker.executer(make_shared<CommandeConstructionCroissante>(gestionnaire));}},
         { "c2",[&]() {invoker.executer(make_shared<CommandeConstructionMinimale>(gestionnaire));}},
         { "r", [&]() {invoker.redo();}},

@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <limits>  
 #include <algorithm>
 
 using namespace std;
@@ -168,10 +169,7 @@ void Gestionnaire::afficherNuages() {
 }
 
 // Fonction pour supprimer un point
-void Gestionnaire::supprimerPoint() {
-    string idSupprimer;
-    cout << "ID du point a supprimer: ";
-    cin >> idSupprimer;
+void Gestionnaire::supprimerPoint(string idSupprimer) {
     auto it = find_if(points.begin(), points.end(),
         [&](const Point& p) { return p.getId() == idSupprimer; });
     if (it == points.end()) {
@@ -185,39 +183,22 @@ void Gestionnaire::supprimerPoint() {
         }
         points.erase(it);
     }
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
 // Fonction pour déplacer un point
-void Gestionnaire::deplacerPoint() {
-    string idDeplacer;
-    int nouveauX, nouveauY;
-    cout << "ID du point a deplacer: ";
-    cin >> idDeplacer;
+void Gestionnaire::deplacerPoint(string idDeplacer, int nouveauX, int nouveauY) {
     auto it = find_if(points.begin(), points.end(),
         [&](const Point& p) { return p.getId() == idDeplacer; });
     if (it == points.end()) {
-        cout << "Erreur : ID invalide";
+        cout << "Erreur : ID invalide\n";
     }
     else {
-        cout << "Nouvelle position (x y): ";
-        if (!(cin >> nouveauX >> nouveauY)) {
-            cout << "Erreur : Mauvaise coordonnees\n";
-        }
-        else {
-            it->deplacerPoint(nouveauX, nouveauY);
-        }
+        it->deplacerPoint(nouveauX, nouveauY);
     }
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
 // Fonction pour créer des nuages de points
-void Gestionnaire::fusionnerPoints() {
-    cout << "Entrez les IDs des points a fusionner (ex: 0 2 4) : ";
-    string ligne;
-    getline(cin >> ws, ligne);
+void Gestionnaire::fusionnerPoints(string ligne) {
     istringstream iss(ligne);
     string id;
     vector<string> ids;

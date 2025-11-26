@@ -26,9 +26,9 @@ public:
     void imprimerGrille();
     void afficherPoints();
     void afficherNuages();
-    void supprimerPoint();
-    void deplacerPoint();
-    void fusionnerPoints();
+    void supprimerPoint(string idSupprimer);
+    void deplacerPoint(string idDeplacer, int nouveauX, int nouveauY);
+    void fusionnerPoints(string ligne);
 private:
     vector<Point> points;
     Nuages nuages;

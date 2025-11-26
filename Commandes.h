@@ -31,12 +31,13 @@ private:
 // Commande s
 class CommandeSupprimer : public Commande {
 public:
-    CommandeSupprimer(Gestionnaire& g);
+    CommandeSupprimer(Gestionnaire& g, string id);
     virtual ~CommandeSupprimer() = default;
     virtual void executer() override;
     virtual void annuler() override;
     virtual shared_ptr<Commande> clone() const override;
 private:
+    string idSupprimer;
     Gestionnaire& gestionnaire;
     vector<Point> points;
     Nuages nuages;
@@ -45,7 +46,7 @@ private:
 // Commande d
 class CommandeDeplacer : public Commande {
 public:
-    CommandeDeplacer(Gestionnaire& g);
+    CommandeDeplacer(Gestionnaire& g, string id, int x, int y);
     virtual ~CommandeDeplacer() = default;
     virtual void executer() override;
     virtual void annuler() override;
@@ -53,12 +54,15 @@ public:
 private:
     Gestionnaire& gestionnaire;
     vector<Point> points;
+    string idDeplacer;
+    int positionX;
+    int positionY;
 };
 
 // Commande f
 class CommandeFusionner : public Commande {
 public:
-    CommandeFusionner(Gestionnaire& g);
+    CommandeFusionner(Gestionnaire& g, string ligne);
     virtual ~CommandeFusionner() = default;
     virtual void executer() override;
     virtual void annuler() override;
@@ -66,6 +70,8 @@ public:
 private:
     Gestionnaire& gestionnaire;
     Nuages nuages;
+    vector<Point> points;
+    string ids;
 };
 
 // Commande c1
