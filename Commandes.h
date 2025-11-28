@@ -12,7 +12,7 @@ public:
     virtual void executer() = 0;
     virtual void annuler() = 0;
     virtual shared_ptr<Commande> clone() const = 0;
-    virtual bool possibiliteRetour() const { return true;}
+    virtual bool possibiliteRetour() const { return true; }
 };
 
 // Commande a
@@ -23,7 +23,7 @@ public:
     virtual void executer() override;
     virtual void annuler() override;
     virtual shared_ptr<Commande> clone() const override;
-    virtual bool possibiliteRetour() const { return false;}
+    virtual bool possibiliteRetour() const override { return false; }
 private:
     Gestionnaire& gestionnaire;
 };
@@ -39,8 +39,9 @@ public:
 private:
     string idSupprimer;
     Gestionnaire& gestionnaire;
-    vector<Point> points;
-    Nuages nuages;
+    vector<shared_ptr<Point>> points;
+    vector<shared_ptr<Nuage>> nuages;
+    vector<vector<shared_ptr<Composante>>> contenuNuages;
 };
 
 // Commande d
@@ -53,10 +54,12 @@ public:
     virtual shared_ptr<Commande> clone() const override;
 private:
     Gestionnaire& gestionnaire;
-    vector<Point> points;
+    vector<shared_ptr<Point>> points;
     string idDeplacer;
     int positionX;
     int positionY;
+    int ancienX;
+    int ancienY;
 };
 
 // Commande f
@@ -69,8 +72,9 @@ public:
     virtual shared_ptr<Commande> clone() const override;
 private:
     Gestionnaire& gestionnaire;
-    Nuages nuages;
-    vector<Point> points;
+    vector<shared_ptr<Nuage>> nuages;
+    vector<shared_ptr<Point>> points;
+    vector<string> texturesPoints; 
     string ids;
 };
 
@@ -108,7 +112,7 @@ public:
     virtual void executer() override;
     virtual void annuler() override;
     virtual shared_ptr<Commande> clone() const override;
-    virtual bool possibiliteRetour() const { return false;}
+    virtual bool possibiliteRetour() const override { return false; }
 private:
     Gestionnaire& gestionnaire;
 };
@@ -121,7 +125,7 @@ public:
     virtual void executer() override;
     virtual void annuler() override;
     virtual shared_ptr<Commande> clone() const override;
-    virtual bool possibiliteRetour() const { return false;}
+    virtual bool possibiliteRetour() const override { return false; }
 private:
     Gestionnaire& gestionnaire;
 };

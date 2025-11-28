@@ -7,238 +7,286 @@
 
 using namespace std;
 
-void Gestionnaire::tracerLigne(vector<vector<char>>& grille) {
-    
-    auto nuagesParTexture = nuages.getTextures();
-    for (int n = 0; n < 3; ++n) {
-        if (strategieConstruction) {
-            auto& idsNuage  = nuagesParTexture[n];
-            for (size_t i = 0; i < idsNuage.size(); ++i) {
-                size_t nextIndex = (i + 1) % idsNuage.size();
-                Point* p1 = nullptr;
-                Point* p2 = nullptr;
-                for (auto& p : points) {
-                    if (p.getId() == idsNuage[i]) p1 = &p;
-                    if (p.getId() == idsNuage[nextIndex]) p2 = &p;
-                    if (p1 && p2) break;
-                }
-                if (!p1 || !p2) continue;
-                int dx = p2->getX() - p1->getX();
-                int dy = p2->getY() - p1->getY();
-                double pente;
+Gestionnaire::Gestionnaire() 
+    : strategieConstruction(nullptr), strategieAffichage(nullptr) {}
 
-                // Si la ligne est verticale
-                if (dx == 0) {
-                    for (int j = 0; j <= abs(dy); ++j) {
-                        int y = (p1->getY() < p2->getY()) ? p1->getY() + j : p1->getY() - j;
-                        if (p2->getX() >= 0 && p2->getX() < LARGEUR && y >= 0 && y < HAUTEUR)
-                            grille[y][p2->getX()] = '|';
-                    }
-                }
-                // Si la ligne est horizontale
-                else if (dy == 0) {
-                    for (int j = 0; j <= abs(dx); ++j) {
-                        int x = (p1->getX() < p2->getX()) ? p1->getX() + j : p1->getX() - j;
-                        if (p2->getY() >= 0 && p2->getY() < HAUTEUR && x >= 0 && x < LARGEUR)
-                            grille[p2->getY()][x] = '-';
-                    }
-                }
-
-                // Si la ligne est diagonale
-                else {
-                    pente = (double) dy / dx;
-                    for (int i = 0; i <= abs(dy); ++i) {
-                        double t = (double)i / abs(dy);
-                        // On fait une interpolation lineaire
-                        int x = round(p1->getX() + t * (p2->getX() - p1->getX()));
-                        int y = round(p1->getY() + t * (p2->getY() - p1->getY()));
-
-                        int debut = 0, fin = 0;
-                        if (abs(pente) < 0.4) {
-                            debut = x-1;
-                            fin = x+1;
-                        } else if (abs(pente) < 0.8) {
-                            debut = x-1;
-                            fin = x;
-                        } else {
-                            debut = x;
-                            fin = x;
-                        }
-                        for (int k = debut; k <= fin; ++k) {
-                            if (k >= 0 && k < LARGEUR && y >= 0 && y < HAUTEUR) {
-                                grille[y][k] = (pente > 0) ? '/' : '\\';
-                            }
-                        }
-                    }
-                }
+vector<shared_ptr<Point>> Gestionnaire::extrairePoints() const {
+    vector<shared_ptr<Point>> points;
+    for (const auto& comp : composantes) {
+        if (comp->getNombreComposants() == 1) {
+            if (auto point = dynamic_pointer_cast<Point>(comp)) {
+                points.push_back(point);
             }
         }
-        // Ajouter les points
-        for (const Point& p : points) {
-            int x = p.getX();
-            int y = p.getY();
-            string textures = strategieAffichage->getString(p);
-            if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR) {
-                for (int i = 0; i < textures.length() && x < LARGEUR; i++) {
-                    char texture = textures[i];
-                    grille[y][x++] = texture;
-                }
+    }
+    return points;
+}
+
+vector<shared_ptr<Nuage>> Gestionnaire::extraireNuages() const {
+    vector<shared_ptr<Nuage>> nuages;
+    for (const auto& comp : composantes) {
+        if (comp->getNombreComposants() > 1) {
+            if (auto nuage = dynamic_pointer_cast<Nuage>(comp)) {
+                nuages.push_back(nuage);
             }
-        } 
+        }
     }
+    return nuages;
 }
-
-void Gestionnaire::imprimerGrille() {
-    // On crée une grille.
-    vector<vector<char>> grille(HAUTEUR, vector<char>(LARGEUR, ' '));
-
-    // On trace une ligne entre le point 0 et 1.
-    // TODO : Remplacer par un tracé selon la commande de l'utilisateur (c1 ou c2)
-    tracerLigne(grille);
-
-
-    // On imprime la grille.
-    for (int y = HAUTEUR - 1; y >= 0; --y) {
-        for (int x = 0; x < LARGEUR; ++x)
-            cout << grille[y][x];
-        cout << '\n';   
-    }
-}
-
 
 void Gestionnaire::creerPoints(const string& ligne) {
-    //vector<Point> points;
-    // On crée un flux de lecture (istringstream) à partir de la chaîne ligne.
     istringstream iss(ligne);
     string token;
-    // On lit chaque point de la ligne (séparé par des espaces).
     while (iss >> token) {
-        // On vérifie que le point est entre parenthèses
         if (token.size() >= 3 && token.front() == '(' && token.back() == ')') {
-            // On enlève les parenthèses au début et à la fin.
             token = token.substr(1, token.size() - 2);
-            // On remplace la virgule par un espace.
             replace(token.begin(), token.end(), ',', ' ');
-            // On crée un flux de lecture pour chaque point
             istringstream pair(token);
             int x, y;
-            // On ajoute un point {x, y} au vecteur de points.
             if (pair >> x >> y) {
-                points.push_back(Point(x, y));
+                composantes.push_back(make_shared<Point>(x, y));
             }
         }
     }
 }
 
-// Fonction pour afficher les points et les nuages
-void Gestionnaire::afficherPoints() {
-    cout << "\nListe:\n";
-    for (const auto& p : points) {
-        cout << p.getId() + ": ("
-            + to_string(p.getX()) + ","
-            + to_string(p.getY()) + ")   textures: '"
-            + p.getTexture() + "'\n";
-    }
-}
-
-void Gestionnaire::afficherNuages() {
-    if (!nuages.getTexture1().empty()) {
-        cout << "Nuage \"o\" contient les points: ";
-        for (size_t i = 0; i < nuages.getTexture1().size(); ++i) {
-            cout << nuages.getTexture1()[i];
-            if (i != nuages.getTexture1().size() - 1) cout << ", ";
-        }
-        cout << "\n";
-    }
-    if (!nuages.getTexture2().empty()) {
-        cout << "Nuage \"#\" contient les points: ";
-        for (size_t i = 0; i < nuages.getTexture2().size(); ++i) {
-            cout << nuages.getTexture2()[i];
-            if (i != nuages.getTexture2().size() - 1) cout << ", ";
-        }
-        cout << "\n";
-    }
-    if (!nuages.getTexture3().empty()) {
-        cout << "Nuage \"$\" contient les points: ";
-        for (size_t i = 0; i < nuages.getTexture3().size(); ++i) {
-            cout << nuages.getTexture3()[i];
-            if (i != nuages.getTexture3().size() - 1) cout << ", ";
-        }
-        cout << "\n";
-    }
-}
-
-// Fonction pour supprimer un point
-void Gestionnaire::supprimerPoint(string idSupprimer) {
-    auto it = find_if(points.begin(), points.end(),
-        [&](const Point& p) { return p.getId() == idSupprimer; });
-    if (it == points.end()) {
-        cout << "Erreur : ID invalide";
-    }
-    else {
-        auto nuageParTexture = nuages.getTextures();
-        for (int i = 0; i < 3; ++i) {
-            auto& nuage = nuageParTexture[i];
-            nuage.erase(remove(nuage.begin(), nuage.end(), idSupprimer), nuage.end());
-        }
-        points.erase(it);
-    }
-}
-
-// Fonction pour déplacer un point
-void Gestionnaire::deplacerPoint(string idDeplacer, int nouveauX, int nouveauY) {
-    auto it = find_if(points.begin(), points.end(),
-        [&](const Point& p) { return p.getId() == idDeplacer; });
-    if (it == points.end()) {
+void Gestionnaire::supprimerPoint(const string& id) {
+    auto composante = trouverComposante(id);
+    if (!composante) {
         cout << "Erreur : ID invalide\n";
+        return;
     }
-    else {
-        it->deplacerPoint(nouveauX, nouveauY);
+    for (auto& comp : composantes) {
+        comp->retirer(composante);
     }
+    composantes.erase(
+        remove_if(composantes.begin(), composantes.end(),
+            [&](const shared_ptr<Composante>& c) { return c->getId() == id; }),
+        composantes.end()
+    );
 }
 
-// Fonction pour créer des nuages de points
-void Gestionnaire::fusionnerPoints(string ligne) {
+void Gestionnaire::deplacerPoint(const string& id, int nouveauX, int nouveauY) {
+    auto composante = trouverComposante(id);
+    if (!composante) {
+        cout << "Erreur : ID invalide\n";
+        return;
+    }
+    composante->deplacer(nouveauX, nouveauY);
+}
+
+void Gestionnaire::fusionnerPoints(const string& ligne) {
     istringstream iss(ligne);
     string id;
-    vector<string> ids;
+    
+    auto nuage = make_shared<Nuage>();
+    
     while (iss >> id) {
-        auto it = find_if(points.begin(), points.end(),
-            [&](const Point& p) { return p.getId() == id; });
-        if (it != points.end()) ids.push_back(id);
-        else {
+        auto composante = trouverComposante(id);
+        if (composante && composante->getNombreComposants() >= 1) {
+            nuage->ajouter(composante);
+        } else {
             cout << "ID invalide: " << id << "\n";
         }
     }
-    if (!ids.empty()) {
-        nuages.ajouterNuage(ids, points);
+    if (nuage->getNombreComposants() == 0) {
+        return;
+    }
+    nuage->setTexture(nuage->getSymbole());
+    composantes.push_back(nuage);
+}
+
+void Gestionnaire::setStrategieConstruction(shared_ptr<StrategieConstruction> strategie) {
+    strategieConstruction = strategie;
+    if (!strategieConstruction) {
+        return;
+    }
+    for (auto& comp : composantes) {
+        if (comp->getNombreComposants() > 1) {
+            strategieConstruction->construireNuages(comp);
+        }
     }
 }
 
-Gestionnaire::Gestionnaire() : strategieConstruction(nullptr), strategieAffichage(nullptr) {}
-
-void Gestionnaire::setStrategieConstruction(shared_ptr<StrategieConstruction> strategie1) {
-    strategieConstruction = strategie1;
-    nuages.setStrategieConstruction(strategieConstruction.get(), points);
-}
-
-void Gestionnaire::setStrategieAffichage(unique_ptr<AffichageStrategie> strategie2) {
-    strategieAffichage = move(strategie2);
+void Gestionnaire::setStrategieAffichage(unique_ptr<AffichageStrategie> strategie) {
+    strategieAffichage = move(strategie);
 }
 
 shared_ptr<StrategieConstruction> Gestionnaire::getStrategieConstruction() const {
     return strategieConstruction;
 }
 
-void Gestionnaire::setPoints(vector<Point> nouveauxPoints) {
-    points = nouveauxPoints;
+void Gestionnaire::afficherComposants() {
+    cout << "\nListe:\n";
+    for (const auto& comp : composantes) {
+        if (comp->getNombreComposants() == 1) {
+            if (auto point = dynamic_pointer_cast<Point>(comp)) {
+                cout << point->getId() + ": (" 
+                    + to_string(point->getX()) + ","
+                    + to_string(point->getY()) + ")   textures: '"
+                    + point->getTexture() + "'\n";
+            }
+        } else if (comp->getNombreComposants() > 1) {
+               if (auto nuage = dynamic_pointer_cast<Nuage>(comp)) {
+                cout << comp->getId() + ": Nuage '" 
+                + nuage->getSymbole() 
+                + "' contient les elements: ";
+                auto enfants = nuage->getEnfants();
+                for (size_t i = 0; i < enfants.size(); ++i) {
+                    cout << enfants[i]->getId();
+                    if (i < enfants.size() - 1) cout << " ";
+                }
+                cout << "\n";
+            }             
+        }
+    }
 }
-void Gestionnaire::setNuages(Nuages nouveauxNuages) {
-    nuages = nouveauxNuages;
+
+void Gestionnaire::imprimerGrille() {
+    vector<vector<char>> grille(HAUTEUR, vector<char>(LARGEUR, ' '));
+    if (strategieConstruction) {
+        tracerLigne(grille);
+    }
+    placerPointsSurGrille(grille);
+    for (int y = HAUTEUR - 1; y >= 0; --y) {
+        for (int x = 0; x < LARGEUR; ++x) {
+            cout << grille[y][x];
+        }
+        cout << '\n';
+    }
 }
-Nuages Gestionnaire::getNuages() const {
-    return nuages;
+
+void Gestionnaire::tracerLigne(vector<vector<char>>& grille) {
+    for (auto& comp : composantes) {
+        if (comp->getNombreComposants() > 1) {
+            if (auto nuage = dynamic_pointer_cast<Nuage>(comp)) {
+                auto enfants = nuage->getEnfants();
+                
+                if (enfants.size() < 2) continue;
+                
+                for (size_t i = 0; i < enfants.size(); ++i) {
+                    auto p1 = dynamic_pointer_cast<Point>(enfants[i]);
+                    auto p2 = dynamic_pointer_cast<Point>(enfants[(i + 1) % enfants.size()]);
+                    
+                    if (p1 && p2) {
+                        tracerLigneEntre(grille, p1.get(), p2.get());
+                    }
+                }
+            }
+        }
+    }
 }
-vector<Point> Gestionnaire::getPoints() const {
-    return points;
+
+void Gestionnaire::tracerLigneEntre(vector<vector<char>>& grille, const Point* p1, const Point* p2) {
+    int dx = p2->getX() - p1->getX();
+    int dy = p2->getY() - p1->getY();
+    
+    if (dx == 0) {
+        int yMin = min(p1->getY(), p2->getY());
+        int yMax = max(p1->getY(), p2->getY());
+        for (int y = yMin; y <= yMax; ++y) {
+            if (p1->getX() >= 0 && p1->getX() < LARGEUR && y >= 0 && y < HAUTEUR) {
+                grille[y][p1->getX()] = '|';
+            }
+        }
+        return;
+    }
+    
+    if (dy == 0) {
+        int xMin = min(p1->getX(), p2->getX());
+        int xMax = max(p1->getX(), p2->getX());
+        for (int x = xMin; x <= xMax; ++x) {
+            if (p1->getY() >= 0 && p1->getY() < HAUTEUR && x >= 0 && x < LARGEUR) {
+                grille[p1->getY()][x] = '-';
+            }
+        }
+        return;
+    }
+    
+    double pente = (double)dy / dx;
+    int steps = max(abs(dx), abs(dy));
+    
+    for (int i = 0; i <= abs(dy); ++i) {
+        double t = (double)i / abs(dy);
+        // On fait une interpolation lineaire
+        int x = round(p1->getX() + t * (p2->getX() - p1->getX()));
+        int y = round(p1->getY() + t * (p2->getY() - p1->getY()));
+
+        int debut = 0, fin = 0;
+        if (abs(pente) < 0.4) {
+            debut = x-1;
+            fin = x+1;
+        } else if (abs(pente) < 0.8) {
+            debut = x-1;
+            fin = x;
+        } else {
+            debut = x;
+            fin = x;
+        }
+        for (int k = debut; k <= fin; ++k) {
+            if (k >= 0 && k < LARGEUR && y >= 0 && y < HAUTEUR) {
+                grille[y][k] = (pente > 0) ? '/' : '\\';
+            }
+        }
+    }
+}
+
+void Gestionnaire::placerPointsSurGrille(vector<vector<char>>& grille) {
+    for (const auto& comp : composantes) {
+        if (comp->getNombreComposants() == 1) {
+            if (auto p = dynamic_pointer_cast<Point>(comp)) {
+                int x = p->getX();
+                int y = p->getY();
+                
+                if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR) {
+                    string texture;
+                    
+                    if (strategieAffichage) {
+                        texture = strategieAffichage->getString(*p);
+                    } else {
+                        texture = comp->getTexture();
+                        if (texture.empty()) {
+                            texture = "•";
+                        }
+                    }
+                    
+                    for (size_t i = 0; i < texture.length() && x + i < LARGEUR; ++i) {
+                        grille[y][x + i] = texture[i];
+                    }
+                }
+            }
+        }
+    }
+}
+
+shared_ptr<Composante> Gestionnaire::trouverComposante(const string& id) const {
+    auto it = find_if(composantes.begin(), composantes.end(),
+        [&](const shared_ptr<Composante>& c) { return c->getId() == id; });
+    return (it != composantes.end()) ? *it : nullptr;
+}
+
+vector<shared_ptr<Point>> Gestionnaire::getPoints() const {
+    return extrairePoints();
+}
+
+vector<shared_ptr<Nuage>> Gestionnaire::getNuages() const {
+    return extraireNuages();
+}
+
+void Gestionnaire::setPoints(vector<shared_ptr<Point>> nouveauxPoints) {
+    composantes.erase(remove_if(composantes.begin(), composantes.end(),
+        [](const shared_ptr<Composante>& c) { return c->getNombreComposants() == 1; }),
+        composantes.end());
+    for (auto& p : nouveauxPoints) {
+        composantes.push_back(p);
+    }
+}
+
+void Gestionnaire::setNuages(vector<shared_ptr<Nuage>> nouveauxNuages) {
+    composantes.erase(remove_if(composantes.begin(), composantes.end(),
+        [](const shared_ptr<Composante>& c) { return c->getNombreComposants() > 1; }),
+        composantes.end());
+    for (auto& n : nouveauxNuages) {
+        composantes.push_back(n);
+    }
 }

@@ -1,13 +1,11 @@
 #include "Point.h"
 
-int Point::compteur = 0;
-
 Point::Point(int px, int py) : x(px), y(py) {
-    id = to_string(compteur++);
+    id = generationId();
     texture = "";
 }
 
-void Point::deplacerPoint(int dx, int dy) {
+void Point::deplacer(int dx, int dy) {
     x = dx;
     y = dy;
 }
@@ -29,5 +27,19 @@ string Point::getTexture() const {
 }
 
 void Point::setTexture(const string& t) {
+    if (texture.find(t) != string::npos) return;
     texture += t;
+}
+
+void Point::reinitialiserTexture(const string& t) {
+    texture = t;
+}
+
+int Point::getNombreComposants() const {
+    return 1;
+}
+
+vector<shared_ptr<Composante>> Point::obtenirPoints() const {
+    auto self = const_pointer_cast<Point>(shared_from_this());
+    return {self};
 }

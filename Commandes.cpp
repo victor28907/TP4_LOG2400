@@ -12,30 +12,43 @@ CommandeGrilleId::CommandeGrilleId(Gestionnaire& g) : gestionnaire(g) {}
 
 // Executer
 void CommandeAfficher::executer() {
-    gestionnaire.afficherPoints();
-    gestionnaire.afficherNuages();
+    gestionnaire.afficherComposants();
 }
 void CommandeSupprimer::executer() {
     points = gestionnaire.getPoints();
     nuages = gestionnaire.getNuages();
+    contenuNuages.clear();
+    for (auto&  n : nuages) {
+        contenuNuages.push_back(n->obtenirPoints());
+    }
     gestionnaire.supprimerPoint(idSupprimer);
 }
 void CommandeDeplacer::executer() {
     points = gestionnaire.getPoints();
+    for (auto& p : points) {
+        if (p->getId() == idDeplacer) {
+            ancienX = p->getX();
+            ancienY = p->getY();
+        }
+    }
     gestionnaire.deplacerPoint(idDeplacer, positionX, positionY);
 }
 void CommandeFusionner::executer() {
     points = gestionnaire.getPoints();
     nuages = gestionnaire.getNuages();
+    texturesPoints.clear();
+    for (auto& p : points) {
+        texturesPoints.push_back(p->getTexture());
+    }
     gestionnaire.fusionnerPoints(ids);
 }
 void CommandeConstructionCroissante::executer() {
     strategie = gestionnaire.getStrategieConstruction();
-    gestionnaire.setStrategieConstruction(make_unique<ConstructionCroissante>());
+    gestionnaire.setStrategieConstruction(make_shared<ConstructionCroissante>());
 }
 void CommandeConstructionMinimale::executer() {
     strategie = gestionnaire.getStrategieConstruction();
-    gestionnaire.setStrategieConstruction(make_unique<ConstructionMinimale>());
+    gestionnaire.setStrategieConstruction(make_shared<ConstructionMinimale>());
 }
 void CommandeGrilleTexture::executer() {
     gestionnaire.setStrategieAffichage(make_unique<AffichageTexture>());
@@ -85,11 +98,22 @@ void CommandeConstructionMinimale::annuler() {
 void CommandeSupprimer::annuler() {
     gestionnaire.setPoints(points);
     gestionnaire.setNuages(nuages);
+    for (int i = 0; i < nuages.size(); ++i) {
+        nuages[i]->vider();
+        for (auto& c : contenuNuages[i]) {
+            nuages[i]->ajouter(c);
+        }
+    }
 }
 void CommandeDeplacer::annuler() {
-    gestionnaire.setPoints(points);
+    gestionnaire.deplacerPoint(idDeplacer, ancienX, ancienY);
 }
 void CommandeFusionner::annuler() {
+    Composante::retirerElementCompteur();
+    Nuage::retirerNuageCompteur();
+    for (int i = 0; i < points.size(); ++i) {
+        points[i]->reinitialiserTexture(texturesPoints[i]);
+    }
     gestionnaire.setPoints(points);
     gestionnaire.setNuages(nuages);
 }
