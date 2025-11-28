@@ -50,10 +50,10 @@ void Nuage::vider() {
     enfants.clear();
 }
 
-vector<shared_ptr<Composante>> Nuage::obtenirPoints() const {
+vector<shared_ptr<Composante>> Nuage::getPoints() const {
     vector<shared_ptr<Composante>> points;
     for (const auto& enfant : enfants) {
-        auto sousPoints = enfant->obtenirPoints();
+        auto sousPoints = enfant->getPoints();
         points.insert(points.end(), sousPoints.begin(), sousPoints.end());
     }
     return points;

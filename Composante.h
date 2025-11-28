@@ -16,16 +16,11 @@ public:
     virtual string getId() const = 0;
     virtual string getTexture() const = 0;
     static void retirerElementCompteur();
-
     virtual void vider() {}
     virtual void ajouter(shared_ptr<Composante> composante) {}
     virtual void retirer(shared_ptr<Composante> composante) {}
-    virtual const vector<shared_ptr<Composante>>& getEnfants() const {
-        static vector<shared_ptr<Composante>> vide;
-        return vide;
-    }
-
-    virtual vector<shared_ptr<Composante>> obtenirPoints() const = 0;
+    virtual const vector<shared_ptr<Composante>>& getEnfants() const;
+    virtual vector<shared_ptr<Composante>> getPoints() const = 0;
     virtual void reorganiserEnfants(const vector<shared_ptr<Composante>>& nouveauxEnfants) {}
 
 protected:
@@ -33,4 +28,4 @@ protected:
     static string generationId();
 };
 
-#endif
+#endif // COMPOSANTE_H

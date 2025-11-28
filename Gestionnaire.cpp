@@ -1,39 +1,10 @@
 #include "Gestionnaire.h"
-#include <cmath>
-#include <iostream>
-#include <sstream>
-#include <limits>  
-#include <algorithm>
 
 using namespace std;
 
-Gestionnaire::Gestionnaire() 
-    : strategieConstruction(nullptr), strategieAffichage(nullptr) {}
+Gestionnaire::Gestionnaire() : strategieConstruction(nullptr), strategieAffichage(nullptr) {}
 
-vector<shared_ptr<Point>> Gestionnaire::extrairePoints() const {
-    vector<shared_ptr<Point>> points;
-    for (const auto& comp : composantes) {
-        if (comp->getNombreComposants() == 1) {
-            if (auto point = dynamic_pointer_cast<Point>(comp)) {
-                points.push_back(point);
-            }
-        }
-    }
-    return points;
-}
-
-vector<shared_ptr<Nuage>> Gestionnaire::extraireNuages() const {
-    vector<shared_ptr<Nuage>> nuages;
-    for (const auto& comp : composantes) {
-        if (comp->getNombreComposants() > 1) {
-            if (auto nuage = dynamic_pointer_cast<Nuage>(comp)) {
-                nuages.push_back(nuage);
-            }
-        }
-    }
-    return nuages;
-}
-
+// Création des points
 void Gestionnaire::creerPoints(const string& ligne) {
     istringstream iss(ligne);
     string token;
@@ -50,6 +21,7 @@ void Gestionnaire::creerPoints(const string& ligne) {
     }
 }
 
+// Supprimer un point 
 void Gestionnaire::supprimerPoint(const string& id) {
     auto composante = trouverComposante(id);
     if (!composante) {
@@ -66,6 +38,7 @@ void Gestionnaire::supprimerPoint(const string& id) {
     );
 }
 
+// Déplacer un point
 void Gestionnaire::deplacerPoint(const string& id, int nouveauX, int nouveauY) {
     auto composante = trouverComposante(id);
     if (!composante) {
@@ -75,12 +48,11 @@ void Gestionnaire::deplacerPoint(const string& id, int nouveauX, int nouveauY) {
     composante->deplacer(nouveauX, nouveauY);
 }
 
-void Gestionnaire::fusionnerPoints(const string& ligne) {
+// Fusionner des composantes pour créer un nuage
+void Gestionnaire::fusionner(const string& ligne) {
     istringstream iss(ligne);
     string id;
-    
     auto nuage = make_shared<Nuage>();
-    
     while (iss >> id) {
         auto composante = trouverComposante(id);
         if (composante && composante->getNombreComposants() >= 1) {
@@ -96,6 +68,7 @@ void Gestionnaire::fusionnerPoints(const string& ligne) {
     composantes.push_back(nuage);
 }
 
+// Setter pour la strategie de construction
 void Gestionnaire::setStrategieConstruction(shared_ptr<StrategieConstruction> strategie) {
     strategieConstruction = strategie;
     if (!strategieConstruction) {
@@ -108,14 +81,17 @@ void Gestionnaire::setStrategieConstruction(shared_ptr<StrategieConstruction> st
     }
 }
 
+// Setter pour la strategie d'affichage
 void Gestionnaire::setStrategieAffichage(unique_ptr<AffichageStrategie> strategie) {
     strategieAffichage = move(strategie);
 }
 
+// Getter pour la strategie de construction
 shared_ptr<StrategieConstruction> Gestionnaire::getStrategieConstruction() const {
     return strategieConstruction;
 }
 
+// Fonction pour afficher (commande a)
 void Gestionnaire::afficherComposants() {
     cout << "\nListe:\n";
     for (const auto& comp : composantes) {
@@ -142,6 +118,7 @@ void Gestionnaire::afficherComposants() {
     }
 }
 
+// Afficher la grille avec les points et les nuages
 void Gestionnaire::imprimerGrille() {
     vector<vector<char>> grille(HAUTEUR, vector<char>(LARGEUR, ' '));
     if (strategieConstruction) {
@@ -156,18 +133,16 @@ void Gestionnaire::imprimerGrille() {
     }
 }
 
+// Tracer les lignes sur la grille
 void Gestionnaire::tracerLigne(vector<vector<char>>& grille) {
     for (auto& comp : composantes) {
         if (comp->getNombreComposants() > 1) {
             if (auto nuage = dynamic_pointer_cast<Nuage>(comp)) {
                 auto enfants = nuage->getEnfants();
-                
                 if (enfants.size() < 2) continue;
-                
                 for (size_t i = 0; i < enfants.size(); ++i) {
                     auto p1 = dynamic_pointer_cast<Point>(enfants[i]);
                     auto p2 = dynamic_pointer_cast<Point>(enfants[(i + 1) % enfants.size()]);
-                    
                     if (p1 && p2) {
                         tracerLigneEntre(grille, p1.get(), p2.get());
                     }
@@ -177,10 +152,11 @@ void Gestionnaire::tracerLigne(vector<vector<char>>& grille) {
     }
 }
 
+// Tracer les lignes entres les points faisant partie d'un même nuage
 void Gestionnaire::tracerLigneEntre(vector<vector<char>>& grille, const Point* p1, const Point* p2) {
     int dx = p2->getX() - p1->getX();
     int dy = p2->getY() - p1->getY();
-    
+    // Ligne verticale
     if (dx == 0) {
         int yMin = min(p1->getY(), p2->getY());
         int yMax = max(p1->getY(), p2->getY());
@@ -191,7 +167,7 @@ void Gestionnaire::tracerLigneEntre(vector<vector<char>>& grille, const Point* p
         }
         return;
     }
-    
+    // Ligne horizontale
     if (dy == 0) {
         int xMin = min(p1->getX(), p2->getX());
         int xMax = max(p1->getX(), p2->getX());
@@ -202,21 +178,18 @@ void Gestionnaire::tracerLigneEntre(vector<vector<char>>& grille, const Point* p
         }
         return;
     }
-    
+    // Ligne diagonale
     double pente = (double)dy / dx;
-    int steps = max(abs(dx), abs(dy));
-    
     for (int i = 0; i <= abs(dy); ++i) {
         double t = (double)i / abs(dy);
         // On fait une interpolation lineaire
         int x = round(p1->getX() + t * (p2->getX() - p1->getX()));
         int y = round(p1->getY() + t * (p2->getY() - p1->getY()));
-
         int debut = 0, fin = 0;
-        if (abs(pente) < 0.4) {
+        if (abs(pente) < PETITE_PENTE) {
             debut = x-1;
             fin = x+1;
-        } else if (abs(pente) < 0.8) {
+        } else if (abs(pente) < MOYENNE_PENTE) {
             debut = x-1;
             fin = x;
         } else {
@@ -231,25 +204,18 @@ void Gestionnaire::tracerLigneEntre(vector<vector<char>>& grille, const Point* p
     }
 }
 
+// Placer les point en fonction de la strategie d'affichage
 void Gestionnaire::placerPointsSurGrille(vector<vector<char>>& grille) {
     for (const auto& comp : composantes) {
         if (comp->getNombreComposants() == 1) {
             if (auto p = dynamic_pointer_cast<Point>(comp)) {
                 int x = p->getX();
                 int y = p->getY();
-                
                 if (x >= 0 && x < LARGEUR && y >= 0 && y < HAUTEUR) {
                     string texture;
-                    
                     if (strategieAffichage) {
                         texture = strategieAffichage->getString(*p);
-                    } else {
-                        texture = comp->getTexture();
-                        if (texture.empty()) {
-                            texture = "•";
-                        }
                     }
-                    
                     for (size_t i = 0; i < texture.length() && x + i < LARGEUR; ++i) {
                         grille[y][x + i] = texture[i];
                     }
@@ -259,20 +225,40 @@ void Gestionnaire::placerPointsSurGrille(vector<vector<char>>& grille) {
     }
 }
 
+// Trouver une composante avec son Id
 shared_ptr<Composante> Gestionnaire::trouverComposante(const string& id) const {
     auto it = find_if(composantes.begin(), composantes.end(),
         [&](const shared_ptr<Composante>& c) { return c->getId() == id; });
     return (it != composantes.end()) ? *it : nullptr;
 }
 
+// Getter pour les points
 vector<shared_ptr<Point>> Gestionnaire::getPoints() const {
-    return extrairePoints();
+    vector<shared_ptr<Point>> points;
+    for (const auto& comp : composantes) {
+        if (comp->getNombreComposants() == 1) {
+            if (auto point = dynamic_pointer_cast<Point>(comp)) {
+                points.push_back(point);
+            }
+        }
+    }
+    return points;
 }
 
+// Getter pour les nuages
 vector<shared_ptr<Nuage>> Gestionnaire::getNuages() const {
-    return extraireNuages();
+    vector<shared_ptr<Nuage>> nuages;
+    for (const auto& comp : composantes) {
+        if (comp->getNombreComposants() > 1) {
+            if (auto nuage = dynamic_pointer_cast<Nuage>(comp)) {
+                nuages.push_back(nuage);
+            }
+        }
+    }
+    return nuages;
 }
 
+// Setter pour les points
 void Gestionnaire::setPoints(vector<shared_ptr<Point>> nouveauxPoints) {
     composantes.erase(remove_if(composantes.begin(), composantes.end(),
         [](const shared_ptr<Composante>& c) { return c->getNombreComposants() == 1; }),
@@ -282,6 +268,7 @@ void Gestionnaire::setPoints(vector<shared_ptr<Point>> nouveauxPoints) {
     }
 }
 
+// Setter pour les nuages
 void Gestionnaire::setNuages(vector<shared_ptr<Nuage>> nouveauxNuages) {
     composantes.erase(remove_if(composantes.begin(), composantes.end(),
         [](const shared_ptr<Composante>& c) { return c->getNombreComposants() > 1; }),

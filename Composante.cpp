@@ -9,3 +9,8 @@ string Composante::generationId() {
 void Composante::retirerElementCompteur() {
     compteurComposant--;
 }
+
+const vector<shared_ptr<Composante>>& Composante::getEnfants() const {
+    static vector<shared_ptr<Composante>> vide;
+    return vide;
+}

@@ -39,7 +39,7 @@ int Point::getNombreComposants() const {
     return 1;
 }
 
-vector<shared_ptr<Composante>> Point::obtenirPoints() const {
+vector<shared_ptr<Composante>> Point::getPoints() const {
     auto self = const_pointer_cast<Point>(shared_from_this());
     return {self};
 }

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef INVOKER_H
+#define INVOKER_H
+
 #include <string>
 #include <memory>
 #include <list>
@@ -19,3 +21,5 @@ private:
     Commandes commandesEffectuees;
     Commandes commandesAnnulees;
 };
+
+#endif // INVOKER_H

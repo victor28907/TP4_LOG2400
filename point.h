@@ -20,7 +20,7 @@ public:
     void setTexture(const string& t) override;
     void reinitialiserTexture(const string& t);
     int getNombreComposants() const override;
-    vector<shared_ptr<Composante>> obtenirPoints() const override;
+    vector<shared_ptr<Composante>> getPoints() const override;
 
 private:
     int x;

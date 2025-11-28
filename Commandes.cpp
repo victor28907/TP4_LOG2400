@@ -1,4 +1,7 @@
 #include "Commandes.h"
+// ==========================================================================
+// Constructeur
+// ==========================================================================
 
 CommandeAfficher::CommandeAfficher(Gestionnaire& g) : gestionnaire(g) {}
 CommandeSupprimer::CommandeSupprimer(Gestionnaire& g, string id) : gestionnaire(g), idSupprimer(id) {}
@@ -9,20 +12,27 @@ CommandeConstructionMinimale::CommandeConstructionMinimale(Gestionnaire& g) : ge
 CommandeGrilleTexture::CommandeGrilleTexture(Gestionnaire& g) : gestionnaire(g) {}
 CommandeGrilleId::CommandeGrilleId(Gestionnaire& g) : gestionnaire(g) {}
 
-
+// ==========================================================================
 // Executer
+// ==========================================================================
+
+// Commande a
 void CommandeAfficher::executer() {
     gestionnaire.afficherComposants();
 }
+
+// Commande s
 void CommandeSupprimer::executer() {
     points = gestionnaire.getPoints();
     nuages = gestionnaire.getNuages();
     contenuNuages.clear();
     for (auto&  n : nuages) {
-        contenuNuages.push_back(n->obtenirPoints());
+        contenuNuages.push_back(n->getPoints());
     }
     gestionnaire.supprimerPoint(idSupprimer);
 }
+
+// Commande d
 void CommandeDeplacer::executer() {
     points = gestionnaire.getPoints();
     for (auto& p : points) {
@@ -33,6 +43,8 @@ void CommandeDeplacer::executer() {
     }
     gestionnaire.deplacerPoint(idDeplacer, positionX, positionY);
 }
+
+// Commande f
 void CommandeFusionner::executer() {
     points = gestionnaire.getPoints();
     nuages = gestionnaire.getNuages();
@@ -40,26 +52,37 @@ void CommandeFusionner::executer() {
     for (auto& p : points) {
         texturesPoints.push_back(p->getTexture());
     }
-    gestionnaire.fusionnerPoints(ids);
+    gestionnaire.fusionner(ids);
 }
+
+// Commande c1
 void CommandeConstructionCroissante::executer() {
     strategie = gestionnaire.getStrategieConstruction();
     gestionnaire.setStrategieConstruction(make_shared<ConstructionCroissante>());
 }
+
+// Commande c2
 void CommandeConstructionMinimale::executer() {
     strategie = gestionnaire.getStrategieConstruction();
     gestionnaire.setStrategieConstruction(make_shared<ConstructionMinimale>());
 }
+
+// Commande o1
 void CommandeGrilleTexture::executer() {
     gestionnaire.setStrategieAffichage(make_unique<AffichageTexture>());
     gestionnaire.imprimerGrille();
 }
+
+// Commande o2
 void CommandeGrilleId::executer() {
     gestionnaire.setStrategieAffichage(make_unique<AffichageID>());
     gestionnaire.imprimerGrille();
 }
 
-// Clone
+// ==========================================================================
+// Cloner les commandes
+// ==========================================================================
+
 shared_ptr<Commande> CommandeAfficher::clone() const {
     return make_shared<CommandeAfficher>(gestionnaire);
 }
@@ -85,16 +108,25 @@ shared_ptr<Commande> CommandeGrilleId::clone() const {
     return make_shared<CommandeGrilleId>(gestionnaire);
 }
 
+// ==========================================================================
 // Annuler
+// ==========================================================================
+
 void CommandeAfficher::annuler() {}
 void CommandeGrilleTexture::annuler() {}
 void CommandeGrilleId::annuler() {}
+
+// Commande c1
 void CommandeConstructionCroissante::annuler() {
     gestionnaire.setStrategieConstruction(strategie);
 }
+
+// Commande c2
 void CommandeConstructionMinimale::annuler() {
     gestionnaire.setStrategieConstruction(strategie);
 }
+
+// Commande s
 void CommandeSupprimer::annuler() {
     gestionnaire.setPoints(points);
     gestionnaire.setNuages(nuages);
@@ -105,9 +137,13 @@ void CommandeSupprimer::annuler() {
         }
     }
 }
+
+// Commande d
 void CommandeDeplacer::annuler() {
     gestionnaire.deplacerPoint(idDeplacer, ancienX, ancienY);
 }
+
+// Commande f
 void CommandeFusionner::annuler() {
     Composante::retirerElementCompteur();
     Nuage::retirerNuageCompteur();

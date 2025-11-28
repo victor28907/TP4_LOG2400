@@ -24,8 +24,7 @@ int main(int argc, char* argv[]) {
         cout << "Entrez les points au format (x,y) :\n> ";
         getline(cin, args);
     }
-
-    // Voici des fonctions utiles pour réaliser le TP. 
+ 
     // TODO: Il faudrait les placer dans des classes appropriées.
     gestionnaire.creerPoints(args);
 
@@ -37,6 +36,10 @@ int main(int argc, char* argv[]) {
         { "a", [&]() {invoker.executer(make_shared<CommandeAfficher>(gestionnaire));}},
         { "o1",[&]() {invoker.executer(make_shared<CommandeGrilleTexture>(gestionnaire));}},
         { "o2",[&]() {invoker.executer(make_shared<CommandeGrilleId>(gestionnaire));}},
+        { "c1",[&]() {invoker.executer(make_shared<CommandeConstructionCroissante>(gestionnaire));}},
+        { "c2",[&]() {invoker.executer(make_shared<CommandeConstructionMinimale>(gestionnaire));}},
+        { "r", [&]() {invoker.redo();}},
+        { "u", [&]() {invoker.undo();}},
         { "f", [&]() {
             cout << "Entrez les IDs des points a fusionner (ex: 0 2 4) : ";
             string ligne;
@@ -65,10 +68,6 @@ int main(int argc, char* argv[]) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }},
-        { "c1",[&]() {invoker.executer(make_shared<CommandeConstructionCroissante>(gestionnaire));}},
-        { "c2",[&]() {invoker.executer(make_shared<CommandeConstructionMinimale>(gestionnaire));}},
-        { "r", [&]() {invoker.redo();}},
-        { "u", [&]() {invoker.undo();}}
     };
 
     // Menu
